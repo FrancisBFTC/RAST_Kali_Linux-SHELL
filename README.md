@@ -1,0 +1,2 @@
+# RAST_Kali_Linux-SHELL
+Rast é uma ferramenta desenvolvida em Shell no Kali Linux. Criada para rastrear localização de IPs e informações de sites, como: IP, cidade, região, coordenadas,etc. O Rast é capaz de abrir o google maps nas coordenadas certas. O Rast também rastreia informações de servidores que você conecta através do NETSTAT e localiza informações de outros servidores "linkados" com o servidor original. A ferramenta pode também camuflar seu ip utilizando servidores proxy, de forma permanente e temporária.
