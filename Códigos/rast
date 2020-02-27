@@ -1,0 +1,147 @@
+#! /bin/bash
+
+
+
+if [ $1 = '-c' ] || [ $1 = '--coordenate' ]
+then
+firefox www.google.com/maps/search/$2
+fi
+
+if [ $1 = '-s' ] || [ $1 = '--site' ]
+then
+	echo
+	echo "**** RASTRIAMENTO DE IP ****"
+	echo
+	host $2 | grep "has address" | awk -F " " '{print $4}' > .ip_host
+	for ip in $(cat .ip_host)
+	do
+		curl https://ipinfo.io/$ip > .ip_host
+		cat .ip_host
+	done
+else
+	if [ $1 = '-i' ] || [ $1 = '--ip' ] 
+	then
+		echo
+		echo "**** RASTRIAMENTO DE IP ****"
+		echo
+		curl https://ipinfo.io/$2 > .ip_host
+		cat .ip_host
+	else
+		if [ $1 = '-u' ] || [ $1 = '--ultimate' ]
+		then
+			echo
+			echo "**** RASTRIAMENTO DE IP ****"
+			echo
+			cat .ip_host
+		else
+			if [ $1 = '-I' ] || [ $1 = '--Ip' ]
+			then
+				echo
+				echo "**** RASTRIAMENTO DE IP ****"
+				echo
+				curl https://ipinfo.io/ --insecure --ssl-no-revoke > .ip_host
+				cat .ip_host
+			else
+				if [ $1 = '-h' ] || [ $1 = '--help' ]
+				then
+					echo
+					echo "**** PARÂMETROS DO COMANDO RAST - RASTREAMENTO DE IP ****"
+					echo
+					echo "rast -s/--site [site] : Rastreia localização de um site"
+					echo "rast -i/--ip [ip] : Rastreia localização de um ip"
+					echo "rast -I/--Ip : Rastreia sua localização e seu ip"
+					echo "rast -u/--ultimate : Consulta ultimas informações rastreadas"
+					echo "rast -h/--help : Exibe esta ajuda"
+					echo "rast -n/--netstat : Rastreia IP monitorados do netstat"
+					echo "rast -c/--coordenate [coord x, coord y] : Abre o mapa nas coordenadas "
+					echo "rast -p/--proxylist : Exibe a lista de IPs Proxy"
+					echo "rast -sp/--setproxy [IP:PORTA] --temporary : Seta o ip proxy na maquina de forma temporária"
+					echo "rast -sp/--setproxy [IP:PORTA] --permanently : Seta o ip proxy na máquina de forma permanente"
+					echo "rast -l/--linkage [url] : Exibe links de sites conectados ao host da URL"
+					echo
+				fi
+			fi
+		fi 
+	fi	
+fi
+
+if [ $1 = '-n' ] || [ $1 = '--netstat' ]
+then
+	netstat -n | grep "ESTABELECIDA" > .ip
+	netstat -n | grep "TIME_WAIT" >> .ip
+	awk -F " " '{print $5}' .ip > .ip1
+	cut -d ":" -f1 .ip1 > .ip_host
+	for ip in $(cat .ip_host)
+	do
+        	curl https://ipinfo.io/$ip
+	done
+
+fi
+
+if [ $1 = '-p' ] || [ $1 = '--proxylist' ]
+then
+wget https://free-proxy-list.net/ -O proxys1
+clear
+var=$(cat proxys1)
+sub1=${var//<td>/@}
+sub2=${sub1//td>/@} 
+sub3=${sub2//</@ }
+sub4=${sub3//"@ /@@"/:}
+sub5=${sub4// td class/@}
+sub6=${sub5//"='hm'>"/:}
+sub7=${sub6//"='hx'>"/:}
+sub8=${sub7//"tr>@"/@:}
+
+echo $sub8 > proxys2
+echo > .ip_host
+echo processando arquivo...
+
+for sub in $(cat proxys2)
+do
+	if echo $sub | grep "@:" >/dev/null &&
+	   echo $sub | grep ":@" >/dev/null 
+	then
+	  data=${sub//":@:"/|}
+	  data1=${data//':'/|}
+	  echo $data1 >> .ip_host
+echo _________________________________________________________ >> .ip_host
+	fi
+done
+cat .ip_host
+rm proxys1
+rm proxys2
+echo
+echo Arquivo processado!
+fi
+
+if [ $1 = '-l' ] || [ $1 = '--linkages' ]
+then
+echo > .ip_host
+wget $2 -O result.txt
+clear
+grep href result.txt | cut -d "/" -f3 | grep -v "<" | grep -v  ">" | 
+sort -u | grep -v "(" | grep "\." > result1.txt 
+for link in $(cat result1.txt)
+do
+addr=$(host $link | grep "has address")
+echo $addr
+echo $addr >> .ip_host
+done
+fi
+
+if [ $1 = '-sp' ] || [ $1 = '--setproxy' ]
+then
+if [ $3 = '--temporary' ]
+then
+export http_proxy="http://"$2
+echo servidor proxy setado como: $2
+curl ipinfo.io/ > .ip_host
+cat .ip_host
+fi
+if [ $3 = '--permanently' ]
+then
+echo export http_proxy='http://$2' >> /etc/profile
+source /etc/profile
+. /etc/profile
+fi
+fi
